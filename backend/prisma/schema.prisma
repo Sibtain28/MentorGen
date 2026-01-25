@@ -19,10 +19,12 @@ model User {
   goal       String?
   techStack  String?
 
-  projects   Project[]
+  projects     Project[]
+  stepProgress StepProgress[]
 
   createdAt DateTime @default(now())
 }
+
 
 
 
@@ -54,8 +56,24 @@ model ProjectStep {
   projectId   String   @db.ObjectId
   project     Project  @relation(fields: [projectId], references: [id])
 
+  progress    StepProgress[]
+
   createdAt   DateTime @default(now())
 }
 
 
 
+
+
+model StepProgress {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  completed Boolean  @default(false)
+
+  stepId    String   @db.ObjectId
+  step      ProjectStep @relation(fields: [stepId], references: [id])
+
+  userId    String   @db.ObjectId
+  user      User     @relation(fields: [userId], references: [id])
+
+  updatedAt DateTime @updatedAt
+}

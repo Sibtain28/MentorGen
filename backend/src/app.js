@@ -22,6 +22,7 @@ app.use("/api/users", require("./routes/user.routes"));
 
 app.use("/api/projects", require("./routes/project.routes"));
 
+app.use("/api/steps", require("./routes/step.routes"));
 
 
 module.exports = app;

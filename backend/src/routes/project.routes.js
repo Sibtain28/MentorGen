@@ -5,11 +5,13 @@ const { generateProjectsWithAI } = require("../controllers/project.controller");
 
 const {
   createProject,
-  getMyProjects
+  getMyProjects,
+  getProjectById
 } = require("../controllers/project.controller");
 
 router.post("/", protect, createProject);
 router.get("/", protect, getMyProjects);
 router.post("/generate", protect, generateProjectsWithAI);
+router.get("/:id", protect, getProjectById);
 
 module.exports = router;

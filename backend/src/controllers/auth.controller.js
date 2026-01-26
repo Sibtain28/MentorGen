@@ -34,13 +34,28 @@ exports.register = async (req, res) => {
       }
     });
 
-    // 5️⃣ Response (never send password)
+    // 5️⃣ Generate JWT token (same as login)
+    const token = jwt.sign(
+      { userId: user.id },
+      process.env.JWT_SECRET,
+      { expiresIn: "7d" }
+    );
+
+    // 6️⃣ Set cookie
+    res.cookie("token", token, {
+      httpOnly: true,
+      secure: false, // true in production
+      sameSite: "lax"
+    });
+
+    // 7️⃣ Response (never send password)
     res.status(201).json({
       message: "User registered successfully",
       user: {
         id: user.id,
         name: user.name,
-        email: user.email
+        email: user.email,
+        onboarding_completed: user.onboarding_completed
       }
     });
 
@@ -92,7 +107,8 @@ exports.login = async (req, res) => {
       user: {
         id: user.id,
         name: user.name,
-        email: user.email
+        email: user.email,
+        onboarding_completed: user.onboarding_completed
       }
     });
 

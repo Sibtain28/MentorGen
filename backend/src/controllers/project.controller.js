@@ -19,7 +19,7 @@ exports.createProject = async (req, res) => {
         difficulty,
         concepts,
         estimatedTime,
-        userId: req.user.userId
+        userId: req.user.id
       }
     });
 
@@ -37,7 +37,7 @@ exports.createProject = async (req, res) => {
 exports.getMyProjects = async (req, res) => {
   try {
     const projects = await prisma.project.findMany({
-      where: { userId: req.user.userId },
+      where: { userId: req.user.id },
       orderBy: { createdAt: "desc" }
     });
 
@@ -54,15 +54,23 @@ exports.getMyProjects = async (req, res) => {
 
 exports.generateProjectsWithAI = async (req, res) => {
   try {
-    const userId = req.user.userId;
-    
-
-    const user = await prisma.user.findUnique({
-      where: { id: userId }
-    });
+    const user = req.user;
+    const userId = user.id;
 
     if (!user) {
       return res.status(404).json({ message: "User not found" });
+    }
+
+    // Check if user already has projects (prevent duplicates on refresh)
+    const existingProjects = await prisma.project.findMany({
+      where: { userId }
+    });
+
+    if (existingProjects.length > 0) {
+      return res.status(200).json({
+        message: "Projects already exist",
+        projects: existingProjects
+      });
     }
 
     const prompt = buildProjectPrompt(user);
@@ -93,5 +101,54 @@ exports.generateProjectsWithAI = async (req, res) => {
   } catch (error) {
     console.error("AI GENERATION ERROR:", error);
     res.status(500).json({ message: "Failed to generate projects" });
+  }
+};
+
+// Get single project with progress
+exports.getProjectById = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const userId = req.user.id;
+
+    const project = await prisma.project.findUnique({
+      where: { id },
+      include: {
+        steps: {
+          orderBy: { order: "asc" } // Assuming steps have an order field, checking schema would be better but standard assumption
+        }
+      }
+    });
+
+    if (!project) {
+      return res.status(404).json({ message: "Project not found" });
+    }
+
+    // Get user's progress for these steps
+    const progress = await prisma.stepProgress.findMany({
+      where: {
+        userId,
+        stepId: { in: project.steps.map(s => s.id) }
+      }
+    });
+
+    // Map progress to steps
+    const stepsWithProgress = project.steps.map(step => {
+      const p = progress.find(p => p.stepId === step.id);
+      return {
+        ...step,
+        completed: p ? p.completed : false
+      };
+    });
+
+    res.json({
+      project: {
+        ...project,
+        steps: stepsWithProgress
+      }
+    });
+
+  } catch (error) {
+    console.error("GET PROJECT ERROR:", error);
+    res.status(500).json({ message: "Server error" });
   }
 };

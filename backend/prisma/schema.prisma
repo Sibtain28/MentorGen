@@ -14,10 +14,12 @@ model User {
   email     String   @unique
   password  String
 
-  skillLevel String?
-  domain     String?
-  goal       String?
-  techStack  String?
+  // New personalization fields
+  skillLevel            String?   // Beginner, Intermediate, Advanced
+  preferred_domain      String?   // Web Development, Mobile App, Backend/API, Machine Learning, Full Stack
+  preferred_tech_stack  String[]  // Array: React, Vue, Python, Django, etc.
+  preferred_goal        String?   // Learning, Resume Builder, College Project, Portfolio
+  onboarding_completed  Boolean   @default(false)
 
   projects     Project[]
   stepProgress StepProgress[]

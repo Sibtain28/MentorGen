@@ -4,7 +4,7 @@ const prisma = require("../prisma");
 exports.toggleStepProgress = async (req, res) => {
   try {
     const { stepId } = req.params;
-    const userId = req.user.userId;
+    const userId = req.user.id; // Changed from userId to id
 
     const existing = await prisma.stepProgress.findFirst({
       where: { stepId, userId }
@@ -41,7 +41,7 @@ exports.toggleStepProgress = async (req, res) => {
 exports.getProjectProgress = async (req, res) => {
   try {
     const { projectId } = req.params;
-    const userId = req.user.userId;
+    const userId = req.user.id; // Changed from userId to id
 
     const steps = await prisma.projectStep.findMany({
       where: { projectId }

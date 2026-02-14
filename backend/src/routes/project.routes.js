@@ -1,12 +1,13 @@
 const express = require("express");
 const router = express.Router();
+
 const { protect } = require("../middlewares/auth.middleware");
-const { generateProjectsWithAI } = require("../controllers/project.controller");
 
 const {
   createProject,
   getMyProjects,
-  getProjectById
+  getProjectById,
+  generateProjectsWithAI
 } = require("../controllers/project.controller");
 
 router.post("/", protect, createProject);
